@@ -7,6 +7,9 @@ import { InfoComponent } from './info/info.component';
 import { OrdersComponent } from './orders/orders.component';
 import {SharedModule} from "../../shared/shared.module";
 import {ReactiveFormsModule} from "@angular/forms";
+import {ProductCardComponent} from "../../shared/components/product-card/product-card.component";
+import {ProductModule} from "../product/product.module";
+
 
 
 @NgModule({
@@ -18,8 +21,10 @@ import {ReactiveFormsModule} from "@angular/forms";
   imports: [
     CommonModule,
     SharedModule,
+    ProductModule,
     ReactiveFormsModule,
     PersonalRoutingModule
-  ]
+  ],
+  providers: [ProductCardComponent]
 })
 export class PersonalModule { }
