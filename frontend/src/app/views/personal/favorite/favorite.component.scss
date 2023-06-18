@@ -60,7 +60,7 @@
 
         .favorite-product-price {
           width: 100px;
-          margin-right: 193px;
+          margin-right: 140px;
           font-family: 'Montserrat', sans-serif;
           font-style: normal;
           font-weight: 600;
@@ -68,8 +68,14 @@
           color: $gray-text-color;
         }
 
+        .favorite-product-action {
+          display: flex;
+          align-items: center;
+        }
+
         .favorite-product-action button {
           width: 160px;
+          margin-right: 10px;
         }
 
         .favorite-product-remove {
