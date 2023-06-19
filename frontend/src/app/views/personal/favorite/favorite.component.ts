@@ -3,6 +3,9 @@ import {FavoriteService} from "../../../shared/services/favorite.service";
 import {FavoriteType} from "../../../../types/favorite.type";
 import {DefaultResponseType} from "../../../../types/default-response.type";
 import {environment} from "../../../../environments/environment.development";
+import {CartService} from "../../../shared/services/cart.service";
+import {CartType} from "../../../../types/cart.type";
+
 
 @Component({
   selector: 'app-favorite',
@@ -11,21 +14,46 @@ import {environment} from "../../../../environments/environment.development";
 })
 export class FavoriteComponent implements OnInit{
 
+
+  cartData: CartType | null = null;
+  product: FavoriteType | null = null;
   products: FavoriteType[] = [];
   serverStaticPath = environment.serverStaticPath;
 
-  constructor(private favoriteService: FavoriteService) {
+  constructor(private favoriteService: FavoriteService,
+              private cartService: CartService) {
   }
 
   ngOnInit(): void {
+    this.getProducts()
+  }
+
+  getProducts() {
     this.favoriteService.getFavorites()
       .subscribe((data: FavoriteType[] | DefaultResponseType) => {
         if ((data as DefaultResponseType).error !== undefined) {
           const error = (data as DefaultResponseType).message;
           throw new Error(error);
         }
-
-        this.products = data as FavoriteType[];
+        this.cartService.getCart()
+          .subscribe((cartData: CartType | DefaultResponseType) => {
+            if ((cartData as DefaultResponseType).error !== undefined) {
+              this.products = data as FavoriteType[];
+              throw new Error((cartData as DefaultResponseType).message);
+            }
+            const cartDataResponse = cartData as CartType;
+            this.products = (data as FavoriteType[]).map(product => {
+              if (cartDataResponse) {
+                console.log(cartDataResponse)
+                const productInCart = cartDataResponse.items.find(item => item.product.id === product.id);
+                if (productInCart) {
+                  product.countInCart = productInCart.quantity;
+                }
+              }
+              console.log(product)
+              return product;
+            });
+          });
       });
   }
 
@@ -40,4 +68,26 @@ export class FavoriteComponent implements OnInit{
       });
   }
 
+  addToCart(id: string, count: number ) {
+    this.cartService.updateCart(id, count)
+      .subscribe((data: CartType | DefaultResponseType) => {
+        if ((data as DefaultResponseType).error !== undefined) {
+          throw  new Error((data as DefaultResponseType).message)
+        }
+        this.getProducts()
+      });
+  }
+
+  updateCount(value: number, product: FavoriteType) {
+    let count = value;
+    if (product.countInCart) {
+      this.cartService.updateCart(product.id, count)
+        .subscribe((data: CartType | DefaultResponseType) => {
+          if ((data as DefaultResponseType).error !== undefined) {
+            throw  new Error((data as DefaultResponseType).message)
+          }
+          product.countInCart = count;
+        })
+    }
+  }
 }
